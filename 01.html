@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        a{
+            cursor: pointer;
+        }
+        .bg{
+            background: red;
+        }
+        img{
+            width: 50px;
+            height: 50px;
+        }
+        td span{
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            border: solid 1px;
+            cursor: pointer;
+        }
+        #tab{
+            margin-top: 30px;
+        }
+        div#btn{
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            background: white;
+            z-index: 100;
+        }
+        div#btn p{
+            width: 50%;
+            float: left;
+            padding: 6px 0;
+            text-align: center;
+        }
+        div#top{
+            width: 100%;
+            position: fixed;
+            top: 0;
+            height: 30px;
+            line-height: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+        div#top input{
+            width: 80%;
+        }
+        div#top button{
+            width: 20%;
+        }
+        #zj{
+            position: fixed;
+            bottom: 100px;
+            left:100px
+        }
+    </style>
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Title</title>
+</head>
+<body>
+<div id="box">
+    <div class="content">
+        <div id="top">
+            <input type="text" id="ss" placeholder="搜索冰箱/电脑/手机"><button id="btnS">搜索</button>
+        </div>
+        <table id="tab">
+        </table>
+    </div>
+    <div class="content" style="display: none">
+        <table id="tab1">
+
+        </table>
+        <div id="zj">
+            总价为:<span id="total">0</span>元
+        </div>
+    </div>
+</div>
+<div id="btn">
+    <p class="bg">首页</p>
+    <p>购物车</p>
+</div>
+</body>
+<script src="ajax_v3.js"></script>
+<script src="jquery-1.11.3.min.js"></script>
+<script>
+    let baseUrl="http://localhost:80";
+    //获取数据
+    getData();
+    var dataArr;
+    function getData() {
+        $.get(baseUrl+"/getData",{},function (data) {
+            console.log(data);
+            dataArr=data[0].list;
+            showPage(dataArr);
+        })
+    }
+    //首页渲染页面
+    function showPage(arr){
+        var str="";
+        for(var i=0;i<arr.length;i++){
+            var arrOne=arr[i].products;
+            for(var j=0;j<arrOne.length;j++){
+                str+=`
+                <tr>
+                    <td><img src="img/${arrOne[j].img_url}" /></td>
+                    <td>${arrOne[j].name}</td>
+                    <td>￥${arrOne[j].price}</td>
+                    <td><span onclick=add(${JSON.stringify(arrOne[j])})>+</span></td>
+                </tr>`
+            }
+        }
+        $("#tab").html(str);
+    }
+    // //按钮切换
+    $("#btn p").click(function () {
+        $(this).addClass("bg").siblings().removeClass("bg");
+        var i=$(this).index();
+        $("#box .content").eq(i).show().siblings().hide();
+    })
+    // //搜索
+    $("#btnS").click(function () {
+        if($("#ss").val()=="冰箱"){
+            var str="";
+            var arrOne=dataArr[0].products;
+            // console.log(arrOne);
+            for(var j=0;j<arrOne.length;j++){
+                str+=`
+                    <tr>
+                        <td><img src="img/${arrOne[j].img_url}" /></td>
+                        <td>${arrOne[j].name}</td>
+                        <td>￥${arrOne[j].price}</td>
+                        <td><span onclick=add(${JSON.stringify(arrOne[j])})>+</span></td>
+                    </tr>`
+            }
+            $("#tab").html(str);
+        }else if($("#ss").val()=="电脑"){
+            var str="";
+            var arrOne=dataArr[1].products;
+            // console.log(arrOne);
+            for(var j=0;j<arrOne.length;j++){
+                str+=`
+                    <tr>
+                        <td><img src="img/${arrOne[j].img_url}" /></td>
+                        <td>${arrOne[j].name}</td>
+                        <td>￥${arrOne[j].price}</td>
+                        <td><span onclick=add(${JSON.stringify(arrOne[j])})>+</span></td>
+                    </tr>`
+            }
+            $("#tab").html(str);
+        }else if($("#ss").val()=="手机"){
+            var str="";
+            var arrOne=dataArr[2].products;
+            // console.log(arrOne);
+            for(var j=0;j<arrOne.length;j++){
+                str+=`
+                    <tr>
+                        <td><img src="img/${arrOne[j].img_url}" /></td>
+                        <td>${arrOne[j].name}</td>
+                        <td>￥${arrOne[j].price}</td>
+                        <td><span onclick=add(${JSON.stringify(arrOne[j])})>+</span></td>
+                    </tr>`
+            }
+            $("#tab").html(str);
+        }
+    })
+    // //购物查找数据
+    function add(obj) {
+        obj.num=1;
+        ajax.post(baseUrl+"/addData",obj,function (res) {
+            console.log(res)
+            getData()
+        })
+    }
+
+    getData1();
+    function getData1() {
+        $.get(baseUrl+"/getData1",{},function (data) {
+            console.log(data);
+            showPage1(data);
+        })
+    }
+    function showPage1(arr){
+        console.log(arr);
+        var str="";
+        for(var i=0;i<arr.length;i++){
+            str+=`
+            <tr>
+                <td><img src="img/${arr[i].img_url}" /></td>
+                <td>${arr[i].name}</td>
+                <td class="dj">${arr[i].price}</td>
+                <td class="zj"></td>
+                <td width="78">
+                <span onclick=jian(this,${JSON.stringify(arr[i])}) style="width: 20px;height:20px;float: left;text-align: center">-</span>
+                <span style="width:20px;height:20px;float: left;" class="count">${arr[i].num}</span>
+                <span onclick=jia(this,${JSON.stringify(arr[i])}) style="width: 20px;height:20px;float: right;text-align: center">+</span>
+                </td>
+            </tr>`
+        }
+        $("#tab1").html(str);
+        itemPrice();
+        itemsPrice()
+    }
+    $("#btn p:last").click(function () {
+        getData1();
+        itemsPrice()
+    })
+    // //加减
+    function jian(a,obj) {
+        if(a.nextElementSibling.innerHTML>0){
+            a.nextElementSibling.innerHTML--;
+            // var obj={
+            //     img_url:obj.img_url,
+            //     name:obj.name,
+            //     price:obj.price,
+            //     id:obj.id,
+            //     num:obj.num
+            // }
+            // // obj.num=a.nextElementSibling.innerHTML;
+            // $.post("/addData",obj,function (obj) {
+            //     if(obj.msg==0){
+            //         console.log("obj:",obj);
+            //         getData1(obj);
+            //     }
+            // })
+            itemPrice();
+            itemsPrice()
+        }
+    }
+    function jia(a,obj) {
+        a.previousElementSibling.innerHTML++;
+        // var obj={
+        //     img_url:obj.img_url,
+        //     name:obj.name,
+        //     price:obj.price,
+        //     id:obj.id,
+        //     num:obj.num
+        // }
+        // // obj.num=a.previousElementSibling.innerHTML;
+        // $.post("/addData",obj,function (obj) {
+        //     getData1(obj);
+        // })
+        itemPrice();
+        itemsPrice()
+    }
+    // //单个商品总价
+    function itemPrice() {
+        var djs=$(".dj");
+        var counts=$(".count");
+        var zjs=$(".zj");
+        var sum;
+        for(var i=0;i<djs.length;i++){
+            sum=(djs[i].innerHTML-0)*(counts[i].innerHTML-0);
+            zjs[i].innerHTML=sum;
+        }
+    }
+    // //全部商品总价
+    function itemsPrice() {
+        var djs=$(".dj");
+        var counts=$(".count");
+        var zjs=$(".zj");
+        var sum=0;
+        for(var i=0;i<djs.length;i++){
+            sum+=(djs[i].innerHTML-0)*(counts[i].innerHTML-0);
+        }
+        $("#total").html(sum);
+    }
+
+    // for (var i = 0; i <3; i++) {
+    //     for (var j = 0; j <3; j++) {
+    //         console.log(j)
+    //     }
+    //     console.log("iiiii",i)
+    // }
+</script>
+</html>
